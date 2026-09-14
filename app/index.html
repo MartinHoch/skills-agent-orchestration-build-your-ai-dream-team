@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A concise view of team project health, ownership, activity, and priority.">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to project dashboard</a>
+
+    <main class="dashboard" id="main-content">
+      <header class="dashboard-header">
+        <p class="eyebrow">Team overview</p>
+        <h1>Project Pulse</h1>
+        <p class="intro">A quick read on what the team is moving forward, where attention is needed, and who is leading each project.</p>
+        <p class="summary" id="project-summary" aria-live="polite" hidden>
+          <span class="summary-count" id="project-count">0</span>
+          <span id="summary-label">projects tracked</span>
+        </p>
+      </header>
+
+      <section class="projects-section" aria-labelledby="projects-heading">
+        <div class="section-heading">
+          <h2 id="projects-heading">Current projects</h2>
+          <p class="loading-state" id="loading-state" role="status" aria-live="polite">Loading project data...</p>
+        </div>
+
+        <div class="error-state" id="error-state" role="alert" aria-live="assertive" hidden></div>
+        <div class="project-grid" id="project-grid" aria-live="polite" aria-busy="true"></div>
+      </section>
+    </main>
+
+    <template id="project-card-template">
+      <article class="project-card">
+        <div class="card-topline">
+          <span class="status-badge" data-status></span>
+          <span class="priority-badge" data-priority></span>
+        </div>
+        <h3 class="project-name"></h3>
+        <dl class="project-details">
+          <div class="detail-row">
+            <dt>Owner</dt>
+            <dd class="project-owner"></dd>
+          </div>
+          <div class="detail-row activity-row">
+            <dt>Recent activity</dt>
+            <dd class="project-activity"></dd>
+          </div>
+          <div class="detail-row">
+            <dt>Status</dt>
+            <dd class="project-status"></dd>
+          </div>
+          <div class="detail-row">
+            <dt>Priority</dt>
+            <dd class="project-priority"></dd>
+          </div>
+        </dl>
+      </article>
+    </template>
+
+    <script>
+      (() => {
+        const requiredFields = ["name", "owner", "status", "recentActivity", "priority"];
+        const validStatuses = ["On track", "At risk", "Blocked", "Complete"];
+        const validPriorities = ["High", "Medium", "Low"];
+        const grid = document.querySelector("#project-grid");
+        const template = document.querySelector("#project-card-template");
+        const loadingState = document.querySelector("#loading-state");
+        const errorState = document.querySelector("#error-state");
+        const projectSummary = document.querySelector("#project-summary");
+        const projectCount = document.querySelector("#project-count");
+        const summaryLabel = document.querySelector("#summary-label");
+
+        function validateProjectData(data) {
+          if (!data || !Array.isArray(data.projects)) {
+            throw new Error("Project data must contain a top-level projects array.");
+          }
+
+          data.projects.forEach((project, index) => {
+            requiredFields.forEach((field) => {
+              if (!project || typeof project[field] !== "string" || !project[field].trim()) {
+                throw new Error(`Project ${index + 1} is missing a valid ${field} value.`);
+              }
+            });
+
+            if (!validStatuses.includes(project.status)) {
+              throw new Error(`Project ${index + 1} has an unsupported status.`);
+            }
+
+            if (!validPriorities.includes(project.priority)) {
+              throw new Error(`Project ${index + 1} has an unsupported priority.`);
+            }
+          });
+
+          return data.projects;
+        }
+
+        function renderProjects(projects) {
+          const fragment = document.createDocumentFragment();
+
+          projects.forEach((project, index) => {
+            const card = template.content.firstElementChild.cloneNode(true);
+            const heading = card.querySelector(".project-name");
+            heading.id = `project-heading-${index + 1}`;
+            card.setAttribute("aria-labelledby", heading.id);
+            card.dataset.status = project.status;
+            card.dataset.priority = project.priority;
+            card.querySelector(".status-badge").textContent = project.status;
+            card.querySelector(".priority-badge").textContent = `Priority: ${project.priority}`;
+            card.querySelector(".project-name").textContent = project.name;
+            card.querySelector(".project-owner").textContent = project.owner;
+            card.querySelector(".project-activity").textContent = project.recentActivity;
+            card.querySelector(".project-status").textContent = project.status;
+            card.querySelector(".project-priority").textContent = project.priority;
+            fragment.appendChild(card);
+          });
+
+          grid.replaceChildren(fragment);
+          projectCount.textContent = projects.length;
+          summaryLabel.textContent = projects.length === 1 ? "project tracked" : "projects tracked";
+          projectSummary.hidden = false;
+          grid.setAttribute("aria-busy", "false");
+        }
+
+        function showError(message) {
+          loadingState.hidden = true;
+          projectSummary.hidden = true;
+          grid.setAttribute("aria-busy", "false");
+          errorState.textContent = `Unable to load project data. ${message}`;
+          errorState.hidden = false;
+        }
+
+        fetch("project-data.json")
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`The data request returned ${response.status}.`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const projects = validateProjectData(data);
+            renderProjects(projects);
+            loadingState.hidden = true;
+          })
+          .catch((error) => {
+            showError(error.message);
+          });
+      })();
+    </script>
+  </body>
+</html>

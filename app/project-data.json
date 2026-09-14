@@ -1,0 +1,46 @@
+{
+  "projects": [
+    {
+      "name": "Atlas migration",
+      "owner": "Mina Patel",
+      "status": "On track",
+      "recentActivity": "Finished the account import rehearsal and documented the rollback steps.",
+      "priority": "High"
+    },
+    {
+      "name": "Northstar mobile refresh",
+      "owner": "Theo Brooks",
+      "status": "At risk",
+      "recentActivity": "The accessibility review found two navigation issues; fixes are in progress.",
+      "priority": "High"
+    },
+    {
+      "name": "Signal analytics",
+      "owner": "Avery Chen",
+      "status": "On track",
+      "recentActivity": "The first event-quality report is ready for stakeholder review.",
+      "priority": "Medium"
+    },
+    {
+      "name": "Horizon partner portal",
+      "owner": "Jordan Williams",
+      "status": "Blocked",
+      "recentActivity": "Waiting on the partner identity provider test credentials.",
+      "priority": "High"
+    },
+    {
+      "name": "Beacon design system",
+      "owner": "Riley Morgan",
+      "status": "Complete",
+      "recentActivity": "Published the component guidance and handed off the final tokens.",
+      "priority": "Low"
+    },
+    {
+      "name": "Cedar billing updates",
+      "owner": "Samira Okafor",
+      "status": "On track",
+      "recentActivity": "Payment retry scenarios passed in staging and are ready for release.",
+      "priority": "Medium"
+    }
+  ]
+}
